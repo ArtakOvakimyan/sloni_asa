@@ -3,14 +3,14 @@
 import { useState, useEffect, useRef } from 'react';
 import styles from './SlotMachine.module.css';
 
-const emojis = ['🍒', '🍋', '🍊', '🍇', '🍉', '🍓', '🍍', '🥝', '🥥', '🎰', '💰', '💎'];
+const EMOJIS = ['7️⃣', '🍋', '🍇', '🍻'];
 
 export default function SlotMachine() {
     const [isSpinning, setIsSpinning] = useState(false);
     const [result, setResult] = useState('');
     const [resultClass, setResultClass] = useState('');
     const workerRef = useRef(null);
-    const finalResults = useRef({}); // Убрали emojiElements, так как он не используется
+    const finalResults = useRef({});
 
     useEffect(() => {
         workerRef.current = new Worker(new URL('../../../public/slots-worker.js', import.meta.url));
@@ -35,7 +35,7 @@ export default function SlotMachine() {
             }
             else if (action === 'stop') {
                 document.getElementById(slotId).style.transform = `translateY(-${position * 100}px)`;
-                finalResults.current[slotId] = finalEmoji;
+                finalResults.current[slotId] = emojis[position]; // Используем emojis из worker
 
                 if (Object.keys(finalResults.current).length === 3) {
                     checkResult();
@@ -49,6 +49,7 @@ export default function SlotMachine() {
     const checkResult = () => {
         setIsSpinning(false);
         const { slot1, slot2, slot3 } = finalResults.current;
+        console.log('Results:', slot1, slot2, slot3);
 
         if (slot1 === slot2 && slot2 === slot3) {
             setResult('Бинго! Вы выиграли! 🎉');
@@ -71,11 +72,12 @@ export default function SlotMachine() {
         finalResults.current = {};
 
         ['slot1', 'slot2', 'slot3'].forEach(slotId => {
-            const finalIndex = Math.floor(Math.random() * emojis.length);
+            const finalIndex = Math.floor(Math.random() * EMOJIS.length);
             workerRef.current.postMessage({
                 action: 'spin',
                 slotId,
-                finalIndex
+                finalIndex,
+                emojis: EMOJIS // Передаём фиксированный набор эмодзи
             });
         });
     };
