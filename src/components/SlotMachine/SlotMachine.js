@@ -16,7 +16,7 @@ export default function SlotMachine() {
         workerRef.current = new Worker(new URL('../../../public/slots-worker.js', import.meta.url));
 
         workerRef.current.onmessage = (e) => {
-            const { action, slotId, position, finalEmoji, emojis } = e.data;
+            const { action, slotId, position, emojis } = e.data;
 
             if (action === 'init') {
                 const slot = document.getElementById(slotId);
